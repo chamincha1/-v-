@@ -1,20 +1,27 @@
 {
-  "name": "market-pulse-ai-studio",
+  "name": "market-pulse-preview",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "A dependency-free, runnable preview for the MARKET PULSE Python application",
   "scripts": {
-    "dev": "node server.mjs",
-    "start": "node server.mjs",
-    "build": "node scripts/build.mjs",
-    "preview": "node server.mjs --dist",
-    "test": "node --test tests_web/*.test.mjs",
-    "check": "npm test && npm run build"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "dependencies": {},
-  "devDependencies": {},
-  "engines": {
-    "node": ">=20"
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}{
+  "name": "market-pulse-preview",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
   }
 }
