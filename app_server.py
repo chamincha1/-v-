@@ -1,10 +1,11 @@
-"""Low-overhead localhost-only MARKET PULSE server. Run: python app_server.py.
+"""MARKET PULSE: same UI and features on local Windows or a hosted web service.
 
-Serves the existing fintech UI without Node/npm/AI Studio/Streamlit reruns.
-Financial fetching & AI only happen after explicit browser actions.
+No Node/npm/AI Studio. Environment controls host, port and optional site password.
 """
 from __future__ import annotations
 
+import base64
+import hmac
 import json
 import logging
 import os
@@ -24,7 +25,7 @@ from market_api import recent_prices, cached_prices, predictor, search_stocks, M
 from stock_catalog import CATALOG
 
 ROOT = Path(__file__).resolve().parent
-HOST = '127.0.0.1'  # Local computer only; no public binding
+LOCAL_HOST = '127.0.0.1'
 DEFAULT_PORT = 8765
 MAX_POST_BYTES = 12_000
 MAX_API_CONCURRENCY = 3
@@ -45,7 +46,7 @@ class UserInputError(ValueError):
 
 
 class AppHandler(SimpleHTTPRequestHandler):
-    server_version = 'MarketPulseLocal/2.1'
+    server_version = 'MarketPulse/2.2'
     sys_version = ''
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -53,6 +54,43 @@ class AppHandler(SimpleHTTPRequestHandler):
     def log_message(self, fmt, *args):
         # Avoid logging full URL query values and submitted article/AI prompts.
         logging.info('%s %s', self.client_address[0], (fmt % args).split('?')[0][:250])
+
+    def _authorized(self) -> bool:
+        """Optional browser-native Basic authentication; never persist passwords in JS.
+
+        Render health checks must remain accessible even if the whole UI is protected.
+        The optional password is configured ONLY in the hosting environment.
+        """
+        if urlsplit(self.path).path == '/api/health':
+            return True
+        password = os.environ.get('MARKET_PULSE_SITE_PASSWORD', '')
+        if not password:
+            return True
+        supplied = self.headers.get('Authorization', '')
+        if not supplied.startswith('Basic '):
+            return False
+        try:
+            raw = base64.b64decode(supplied[6:], validate=True).decode('utf-8')
+            username, candidate = raw.split(':', 1)
+        except (ValueError, UnicodeDecodeError):
+            return False
+        return (hmac.compare_digest(username, 'marketpulse')
+                and hmac.compare_digest(candidate, password))
+
+    def _need_auth(self) -> bool:
+        if self._authorized():
+            return False
+        body = '로그인이 필요합니다.'.encode('utf-8')
+        self.send_response(401)
+        self.send_header('WWW-Authenticate', 'Basic realm="MARKET PULSE", charset="UTF-8"')
+        self.send_header('Content-Type', 'text/plain; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        self.end_headers()
+        if self.command != 'HEAD':
+            self.wfile.write(body)
+        return True
 
     def _headers(self, code: int, kind: str, length: int) -> None:
         self.send_response(code)
@@ -93,6 +131,8 @@ class AppHandler(SimpleHTTPRequestHandler):
         return self.do_GET()
 
     def do_GET(self):
+        if self._need_auth():
+            return
         try:
             uri = urlsplit(self.path)
             if uri.path in ('/api/health', '/api/catalog', '/api/stock', '/api/stock/cached', '/api/search'):
@@ -128,6 +168,8 @@ class AppHandler(SimpleHTTPRequestHandler):
             return self._error(UserInputError('서버 처리 중 오류가 발생했습니다.'), 500)
 
     def do_POST(self):
+        if self._need_auth():
+            return
         try:
             uri = urlsplit(self.path)
             if uri.path not in ('/api/news/analyze', '/api/predict'):
@@ -149,8 +191,11 @@ class AppHandler(SimpleHTTPRequestHandler):
                 if uri.path == '/api/predict':
                     code = str(data.get('code', ''))
                     return self._json({'ok': True, **predictor(code)})
+                # The public internet must never be allowed to consume an owner's AI key freely.
+                if os.environ.get('MARKET_PULSE_CLOUD') == '1' and not os.environ.get('MARKET_PULSE_SITE_PASSWORD', ''):
+                    return self._error(GroqError('클라우드 AI 분석을 사용하려면 MARKET_PULSE_SITE_PASSWORD를 서버 환경변수에 설정하세요.'), 503)
                 if not configured():
-                    return self._error(GroqError('GROQ_API_KEY가 등록되지 않았습니다. 프로젝트 .env 파일에 추가하세요.'), 503)
+                    return self._error(GroqError('GROQ_API_KEY가 등록되지 않았습니다. 서버 환경변수에 추가하세요.'), 503)
                 urls = data.get('urls', [])
                 if not isinstance(urls, list) or not 1 <= len(urls) <= 4:
                     return self._error(UserInputError('공개 기사 URL을 1~4개 입력하세요.'))
@@ -176,18 +221,25 @@ class AppHandler(SimpleHTTPRequestHandler):
 
 def main():
     logging.basicConfig(level=logging.WARNING, format='%(levelname)s %(message)s')
-    raw = os.environ.get('MARKET_PULSE_PORT', str(DEFAULT_PORT))
+    raw = os.environ.get('PORT') or os.environ.get('MARKET_PULSE_PORT', str(DEFAULT_PORT))
     try:
         port = int(raw)
         if not 1 <= port <= 65535: raise ValueError()
     except ValueError:
-        raise SystemExit('MARKET_PULSE_PORT는 1~65535 사이 숫자여야 합니다.')
-    httpd = ThreadingHTTPServer((HOST, port), AppHandler)
+        raise SystemExit('PORT 또는 MARKET_PULSE_PORT는 1~65535 사이 숫자여야 합니다.')
+    cloud = os.environ.get('MARKET_PULSE_CLOUD') == '1' or bool(os.environ.get('PORT'))
+    host = '0.0.0.0' if cloud else os.environ.get('MARKET_PULSE_HOST', LOCAL_HOST)
+    httpd = ThreadingHTTPServer((host, port), AppHandler)
     httpd.daemon_threads = True
-    print(f'MARKET PULSE started: http://{HOST}:{port}', flush=True)
-    print('종료하려면 Ctrl+C를 누르세요. 외부 네트워크에 공개하지 않습니다.', flush=True)
-    if os.environ.get('MARKET_PULSE_AUTO_OPEN', '1') != '0':
-        Timer(1.0, lambda: webbrowser.open(f'http://{HOST}:{port}')).start()
+    print(f'MARKET PULSE started: http://{host}:{port}', flush=True)
+    if cloud:
+        print('클라우드 배포 모드: 외부 접속 가능 · HTTPS는 호스팅 제공자가 처리', flush=True)
+        if not os.environ.get('MARKET_PULSE_SITE_PASSWORD'):
+            print('주의: 비밀번호 미설정으로 공개 페이지입니다. GroqCloud API는 사용이 제한됩니다.', flush=True)
+    else:
+        print('로컬 실행: 종료하려면 Ctrl+C를 누르세요.', flush=True)
+        if os.environ.get('MARKET_PULSE_AUTO_OPEN', '1') != '0':
+            Timer(1.0, lambda: webbrowser.open(f'http://{LOCAL_HOST}:{port}')).start()
     try: httpd.serve_forever(poll_interval=.25)
     except KeyboardInterrupt: pass
     finally: httpd.server_close()

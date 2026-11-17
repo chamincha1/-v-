@@ -9,7 +9,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-DATA_CACHE = ROOT / 'data_cache'
+DATA_CACHE = Path(os.environ.get('MARKET_PULSE_DATA_DIR', str(ROOT / 'data_cache'))).expanduser()
 NEWS_CACHE = ROOT / 'news_cache'
 MODEL_DIR = ROOT / 'models'
 TODAY = date.today()

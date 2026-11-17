@@ -20,7 +20,8 @@ DEFAULT_MODEL = 'openai/gpt-oss-120b'
 ALLOWED_QUALITY = {'standard', 'deep'}
 _budget_lock = Lock()
 KST = timezone(timedelta(hours=9))
-USAGE_PATH = ROOT / 'data_cache' / 'ai_usage.json'
+from config import DATA_CACHE
+USAGE_PATH = DATA_CACHE / 'ai_usage.json'
 
 
 class GroqError(ValueError):

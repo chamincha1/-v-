@@ -1,4 +1,20 @@
-# MARKET PULSE 2.1 — 실제 주가 자동 조회 + 관심종목 복구
+# MARKET PULSE 2.2 — 기존 화면 그대로, 웹사이트 링크로 실행
+
+**Google AI Studio, npm, 사용자 PC 설치 없이 온라인 웹사이트로 제공할 수 있는 배포형 버전입니다.** 기존 2.1의 HTML/CSS/JavaScript·이미지·8개 화면은 일절 변경하지 않았습니다. Render 배포 방법은 **[클라우드_배포_가이드.md](클라우드_배포_가이드.md)**를 먼저 확인하세요.
+
+> GitHub에 업로드하는 것만으로 웹사이트가 자동으로 열리지는 않습니다. GitHub 저장소를 Render의 Web Service와 연결하고 서버 배포에 성공해야 HTTPS 웹주소가 생성됩니다. Render 무료 서비스는 휴면으로 인한 첫 접속 지연과 비영구 캐시 제한이 있습니다.
+
+## 간편 온라인 배포
+
+1. 전체 소스 파일을 비공개 GitHub 저장소에 업로드합니다. `.env` 또는 실 API 키는 절대 업로드하지 않습니다.
+2. Render 대시보드 → New → Blueprint → 저장소 선택 (`render.yaml`을 읽어 자동 설정).
+3. `MARKET_PULSE_SITE_PASSWORD`를 개인적으로 설정합니다. AI 사용 시 `GROQ_API_KEY`도 등록합니다.
+4. 배포 후 `https://...onrender.com` 주소로 접속합니다. 로그인 사용자 이름은 `marketpulse`입니다.
+
+---
+
+## 기존 MARKET PULSE 2.1 기능 및 로컬 사용법
+
 
 **중요:** MARKET PULSE는 **CSV 파일 없이** 인터넷으로 실제 한국 주식의 과거 일별 OHLCV(일봉)를 자동 가져옵니다. **실시간 체결가가 아니며**, 실제 거래일·제공처·수집 시각을 확인해야 합니다. 새 설치에서 인터넷 접근이 불가능하면 가격을 만들어 표시하지 않습니다.
 
