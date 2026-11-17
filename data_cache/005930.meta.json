@@ -1,0 +1,14 @@
+{
+  "symbol": "005930",
+  "source": "NAVER:005930",
+  "status": "fresh",
+  "retrieved_at": "2026-11-17T00:49:05+09:00",
+  "requested_from": "2023-08-25",
+  "requested_to": "2026-11-17",
+  "first_trade_date": "2023-03-08",
+  "last_trade_date": "2026-11-16",
+  "adjusted_price": "unknown",
+  "data_kind": "daily_historical_ohlcv",
+  "realtime": false,
+  "attempt_errors": []
+}

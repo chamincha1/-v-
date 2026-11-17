@@ -1,0 +1,14 @@
+{
+  "symbol": "005380",
+  "source": "NAVER:005380",
+  "status": "fresh",
+  "retrieved_at": "2026-11-17T00:47:29+09:00",
+  "requested_from": "2025-08-14",
+  "requested_to": "2026-11-17",
+  "first_trade_date": "2025-02-25",
+  "last_trade_date": "2026-11-16",
+  "adjusted_price": "unknown",
+  "data_kind": "daily_historical_ohlcv",
+  "realtime": false,
+  "attempt_errors": []
+}
