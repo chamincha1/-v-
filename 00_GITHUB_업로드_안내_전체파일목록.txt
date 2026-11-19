@@ -1,0 +1,84 @@
+﻿MARKET PULSE 3.1 — GitHub 업로드 안내 및 전체 파일 목록
+=======================================================
+
+이 ZIP에는 MARKET PULSE 3.1의 원본 프로젝트 38개 파일을 전부 포함했습니다.
+기존 앱 코드·화면·이미지·설정은 수정하거나 삭제하지 않았습니다.
+이 안내 파일만 새로 추가되어 전체 39개입니다.
+
+[중요] GitHub는 이름이 점(.)으로 시작하는 파일도 업로드할 수 있습니다.
+다음 4개는 숨김 파일이 아니라 설정상의 표준 파일명입니다.
+    .gitignore           GitHub에 비밀 파일과 캐시가 올라가지 않게 막는 필수 설정
+    .dockerignore        클라우드 Docker 빌드에서 불필요한 파일을 제외
+    .env.example         API 설정 예시(실제 API 키는 비어 있음)
+    data_cache/.gitkeep  빈 캐시 폴더가 GitHub에서 유지되도록 하는 파일
+이 파일의 이름을 바꾸거나 지우면 원래 기능과 배포에 문제가 생길 수 있습니다.
+이 ZIP의 항목에는 Windows 숨김 속성을 부여하지 않았습니다.
+
+[가장 쉬운 업로드]
+1. ZIP을 새 폴더에 '모두 압축 풀기' 하세요.
+2. Windows 파일 탐색기에서 [보기] > [표시] > [숨긴 항목]을 켜세요.
+   VSCode 탐색기에서 숨겨진 파일이 보이지 않으면 Explorer.exclude 설정도 확인하세요.
+3. GitHub 저장소 > Add file > Upload files로 이동하세요.
+4. 압축을 푼 폴더 속 파일과 폴더를 전부 선택해 업로드하세요.
+   (ZIP 파일 자체를 업로드하는 것이 아닙니다.)
+5. 업로드 목록에 아래 4개의 점(.) 파일이 있는지 꼭 확인하세요.
+6. Commit changes를 클릭하고 GitHub 최상위에 app_server.py, Dockerfile,
+   index.html, requirements.txt, src/, assets/ 등이 있는지 확인하세요.
+
+[업로드하면 안 되는 것]
+- 실제 API 키가 들어 있는 .env 파일은 이 ZIP에 포함하지 않았습니다.
+- .env 파일은 GitHub에 업로드하지 말고 로컬 PC나 배포 서비스의 비밀 환경변수에만 저장하세요.
+- data_cache/에 생성되는 실제 시세·개인 이용량 기록도 업로드하지 마세요.
+
+[GitHub에서 dotfile이 안 보일 때]
+- dotfile은 GitHub 사이트에서 정상 표시됩니다. Windows에서만 안 보이면
+  파일 탐색기의 [숨긴 항목] 표시를 확인하세요.
+- VSCode 터미널(PowerShell)에서 아래 명령으로 전체 파일을 확인할 수도 있습니다.
+  Get-ChildItem -Force
+- .env.example은 예시이므로 GitHub에 업로드해도 되지만, 실제 키를 넣지 마세요.
+
+[프로그램 실행]
+- 로컬: python -m pip install -r requirements.txt
+         python app_server.py
+- 클라우드: Dockerfile과 비공개 환경변수 설정을 사용합니다.
+- 자세한 사용법은 README.md를 확인하세요.
+
+[원본 3.1 파일 38개 — 상대 경로]
+  .dockerignore
+  .env.example
+  .gitignore
+  Dockerfile
+  README.md
+  app_server.py
+  article_link.py
+  assets/catalog.json
+  assets/favicon.svg
+  assets/logo.png
+  backtesting.py
+  config.py
+  data_cache/.gitkeep
+  feature_engineering.py
+  groq_client.py
+  index.html
+  market_api.py
+  market_data.py
+  news_analyzer.py
+  news_collector.py
+  prediction_model.py
+  requirements.txt
+  run_mac_linux.sh
+  src/analytics.js
+  src/app.js
+  stock_catalog.py
+  stock_core.py
+  styles.css
+  technical_indicators.py
+  tests/frontend_kospi.mjs
+  tests/frontend_smoke.mjs
+  tests/test_application.py
+  tests/test_cloud_deployment.py
+  tests/test_kospi_index.py
+  tests/test_nocard_deployment.py
+  tests/test_restored_workflow.py
+  tests/test_v3_analytics.mjs
+  실행하기_윈도우.bat
